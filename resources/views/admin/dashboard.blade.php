@@ -13,8 +13,9 @@
                         <i class="fa-solid fa-coins fs-3"></i>
                     </div>
                     <div>
-                        <span class="text-muted small">Doanh Thu Đã Thu</span>
+                        <span class="text-muted small">Doanh Thu Thực Thu</span>
                         <h4 class="fw-bold mb-0 text-danger">{{ number_format($totalRevenue) }} đ</h4>
+                        <small class="text-muted" style="font-size: 0.75rem;">(Chờ thu: {{ number_format($unpaidRevenue) }} đ)</small>
                     </div>
                 </div>
             </div>

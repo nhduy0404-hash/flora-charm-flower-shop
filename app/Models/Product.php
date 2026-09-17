@@ -60,4 +60,10 @@ class Product extends Model
     {
         return (float) ($this->reviews()->avg('rating') ?? 5.0);
     }
+
+    // Ảnh đại diện sản phẩm với ảnh fallback chuẩn
+    public function getPrimaryImageAttribute(): string
+    {
+        return $this->thumbnail ?: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&q=80';
+    }
 }

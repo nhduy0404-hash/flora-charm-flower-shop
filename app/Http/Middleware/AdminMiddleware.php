@@ -14,8 +14,12 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            return redirect()->route('login')->with('error', 'Bạn phải đăng nhập tài khoản Quản trị viên để truy cập trang này!');
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập tài khoản Quản trị viên để tiếp tục!');
+        }
+
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Truy cập bị từ chối: Bạn không có quyền Quản trị viên để truy cập khu vực này!');
         }
 
         return $next($request);

@@ -70,7 +70,18 @@
     <div class="col-lg-4">
         <!-- Form Cập Nhật Trạng Thái -->
         <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
-            <h5 class="fw-bold mb-3 font-serif">Cập Nhật Trạng Thái</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 font-serif">Cập Nhật Trạng Thái</h5>
+                <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+
+            @if($order->order_status === 'cancelled')
+                <div class="alert alert-warning rounded-4 small p-3 mb-3">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Đơn hàng này đã bị hủy. Số lượng hoa đã được tự động hoàn lại kho.
+                </div>
+            @endif
 
             <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">
                 @csrf
@@ -95,10 +106,20 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-danger w-100 rounded-pill py-2">
+                <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 mb-2">
                     <i class="fa-solid fa-floppy-disk me-1"></i> Lưu Cập Nhật
                 </button>
             </form>
+
+            @if($order->payment_status === 'unpaid')
+                <form action="{{ route('admin.orders.quickMarkPaid', $order->id) }}" method="POST" onsubmit="return confirm('Xác nhận bạn đã nhận được số tiền {{ number_format($order->total_amount) }} đ cho đơn này?');">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="btn btn-outline-success w-100 rounded-pill py-2 small">
+                        <i class="fa-solid fa-check-double me-1"></i> Đã Thu Tiền (Xác Nhận Nhanh)
+                    </button>
+                </form>
+            @endif
         </div>
 
         <!-- Thông Tin Người Nhận -->

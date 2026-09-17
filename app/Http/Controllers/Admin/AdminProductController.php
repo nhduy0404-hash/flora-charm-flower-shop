@@ -68,13 +68,74 @@ class AdminProductController extends Controller
     }
 
     /**
-     * Xóa hoa
+     * Form chỉnh sửa thông tin hoa
+     */
+    public function edit($id)
+    {
+        $product = Product::findOrFail($id);
+        $categories = Category::all();
+        return view('admin.products.edit', compact('product', 'categories'));
+    }
+
+    /**
+     * Cập nhật thông tin hoa vào CSDL
+     */
+    public function update(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|lt:price',
+            'stock_quantity' => 'required|integer|min:0',
+            'thumbnail' => 'nullable|url',
+            'description' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        // Cập nhật slug nếu đổi tên sản phẩm
+        if ($product->name !== $request->name) {
+            $slug = Str::slug($request->name);
+            $count = Product::where('slug', 'LIKE', "{$slug}%")->where('id', '!=', $product->id)->count();
+            if ($count > 0) {
+                $slug .= '-' . ($count + 1);
+            }
+            $product->slug = $slug;
+        }
+
+        $product->update([
+            'category_id' => $request->category_id,
+            'name' => $request->name,
+            'slug' => $product->slug,
+            'price' => $request->price,
+            'sale_price' => $request->sale_price,
+            'stock_quantity' => $request->stock_quantity,
+            'thumbnail' => $request->thumbnail ?: $product->thumbnail,
+            'description' => $request->description,
+            'is_featured' => $request->has('is_featured'),
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        return redirect()->route('admin.products.index')->with('success', "Đã cập nhật mẫu hoa '{$product->name}' thành công!");
+    }
+
+    /**
+     * Xóa hoa hoặc Ẩn nếu đã có đơn hàng
      */
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        $product->delete();
+        $product = Product::withCount('orderItems')->findOrFail($id);
 
-        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm hoa!');
+        // Bảo toàn dữ liệu: Nếu hoa đã có trong đơn hàng của khách, chuyển sang Ẩn bán
+        if ($product->order_items_count > 0) {
+            $product->update(['is_active' => false]);
+            return redirect()->route('admin.products.index')->with('success', "Mẫu hoa '{$product->name}' đã có trong lịch sử đơn hàng, hệ thống đã tự động chuyển sang chế độ [Tạm Ngừng Bán] để bảo toàn dữ liệu!");
+        }
+
+        $product->delete();
+        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm hoa thành công!');
     }
 }

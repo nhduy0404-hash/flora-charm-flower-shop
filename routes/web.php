@@ -56,14 +56,17 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Quản lý hoa
+    // Quản lý hoa (Full CRUD)
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{id}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{id}', [AdminProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{id}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 
     // Quản lý đơn hàng
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::patch('/orders/{id}/pay', [AdminOrderController::class, 'quickMarkPaid'])->name('orders.quickMarkPaid');
 });
