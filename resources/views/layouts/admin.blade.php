@@ -62,12 +62,27 @@
                 </li>
                 <li>
                     <a href="{{ route('admin.products.index') }}" class="{{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-seedling me-2"></i> Quản Lý Sản Phẩm Hoa
+                        <i class="fa-solid fa-seedling me-2"></i> Quản Lý Mẫu Hoa
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-layer-group me-2"></i> Quản Lý Danh Mục
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                         <i class="fa-solid fa-receipt me-2"></i> Quản Lý Đơn Hàng
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.coupons.index') }}" class="{{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-ticket me-2"></i> Quản Lý Voucher / Mã
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-users me-2"></i> Khách Hàng (CRM)
                     </a>
                 </li>
                 <li class="mt-4 pt-3 border-top border-secondary">

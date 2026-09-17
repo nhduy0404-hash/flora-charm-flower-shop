@@ -10,6 +10,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminCouponController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,13 +59,24 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Quản lý hoa (Full CRUD)
+    // Quản lý hoa (Full CRUD + Thùng rác SoftDeletes)
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::get('/products/{id}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{id}', [AdminProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{id}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+    Route::patch('/products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+    Route::delete('/products/{id}/force-delete', [AdminProductController::class, 'forceDelete'])->name('products.forceDelete');
+
+    // Quản lý danh mục hoa
+    Route::resource('categories', AdminCategoryController::class)->except(['create', 'show', 'edit']);
+
+    // Quản lý mã khuyến mãi (Coupons)
+    Route::resource('coupons', AdminCouponController::class)->except(['show']);
+
+    // Quản lý khách hàng (CRM)
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
 
     // Quản lý đơn hàng
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');

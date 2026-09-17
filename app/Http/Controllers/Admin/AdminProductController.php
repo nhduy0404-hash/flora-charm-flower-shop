@@ -11,12 +11,30 @@ use Illuminate\Support\Str;
 class AdminProductController extends Controller
 {
     /**
-     * Danh sách sản phẩm hoa
+     * Danh sách sản phẩm hoa kèm tìm kiếm & lọc thùng rác
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->latest()->paginate(10);
-        return view('admin.products.index', compact('products'));
+        $query = Product::with('category')->latest();
+
+        if ($request->get('status') === 'trashed') {
+            $query->onlyTrashed();
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('keyword')) {
+            $kw = trim($request->keyword);
+            $query->where('name', 'LIKE', "%{$kw}%");
+        }
+
+        $products = $query->paginate(10)->withQueryString();
+        $categories = Category::all();
+        $trashedCount = Product::onlyTrashed()->count();
+
+        return view('admin.products.index', compact('products', 'categories', 'trashedCount'));
     }
 
     /**
@@ -46,7 +64,7 @@ class AdminProductController extends Controller
         ]);
 
         $slug = Str::slug($request->name);
-        $count = Product::where('slug', 'LIKE', "{$slug}%")->count();
+        $count = Product::withTrashed()->where('slug', 'LIKE', "{$slug}%")->count();
         if ($count > 0) {
             $slug .= '-' . ($count + 1);
         }
@@ -72,7 +90,7 @@ class AdminProductController extends Controller
      */
     public function edit($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::withTrashed()->findOrFail($id);
         $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -82,7 +100,7 @@ class AdminProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::withTrashed()->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -99,7 +117,7 @@ class AdminProductController extends Controller
         // Cập nhật slug nếu đổi tên sản phẩm
         if ($product->name !== $request->name) {
             $slug = Str::slug($request->name);
-            $count = Product::where('slug', 'LIKE', "{$slug}%")->where('id', '!=', $product->id)->count();
+            $count = Product::withTrashed()->where('slug', 'LIKE', "{$slug}%")->where('id', '!=', $product->id)->count();
             if ($count > 0) {
                 $slug .= '-' . ($count + 1);
             }
@@ -123,19 +141,39 @@ class AdminProductController extends Controller
     }
 
     /**
-     * Xóa hoa hoặc Ẩn nếu đã có đơn hàng
+     * Xóa mềm hoa (Đưa vào thùng rác SoftDeletes - bảo toàn lịch sử đơn hàng)
      */
     public function destroy($id)
     {
-        $product = Product::withCount('orderItems')->findOrFail($id);
+        $product = Product::findOrFail($id);
+        $product->delete();
 
-        // Bảo toàn dữ liệu: Nếu hoa đã có trong đơn hàng của khách, chuyển sang Ẩn bán
+        return redirect()->route('admin.products.index')->with('success', "Đã chuyển mẫu hoa '{$product->name}' vào thùng rác (Xóa mềm - Lịch sử đơn hàng vẫn bảo toàn nguyên vẹn)!");
+    }
+
+    /**
+     * Khôi phục hoa từ thùng rác
+     */
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return redirect()->route('admin.products.index', ['status' => 'trashed'])->with('success', "Đã khôi phục mẫu hoa '{$product->name}' trở lại danh mục kinh doanh!");
+    }
+
+    /**
+     * Xóa vĩnh viễn hoa khỏi CSDL (Chỉ cho phép nếu CHƯA từng có đơn hàng nào)
+     */
+    public function forceDelete($id)
+    {
+        $product = Product::onlyTrashed()->withCount('orderItems')->findOrFail($id);
+
         if ($product->order_items_count > 0) {
-            $product->update(['is_active' => false]);
-            return redirect()->route('admin.products.index')->with('success', "Mẫu hoa '{$product->name}' đã có trong lịch sử đơn hàng, hệ thống đã tự động chuyển sang chế độ [Tạm Ngừng Bán] để bảo toàn dữ liệu!");
+            return redirect()->route('admin.products.index', ['status' => 'trashed'])->with('error', "Không thể xóa vĩnh viễn mẫu hoa '{$product->name}' vì đã từng phát sinh {$product->order_items_count} đơn hàng trong lịch sử kinh doanh!");
         }
 
-        $product->delete();
-        return redirect()->route('admin.products.index')->with('success', 'Đã xóa sản phẩm hoa thành công!');
+        $product->forceDelete();
+        return redirect()->route('admin.products.index', ['status' => 'trashed'])->with('success', "Đã xóa vĩnh viễn mẫu hoa khỏi cơ sở dữ liệu!");
     }
 }
