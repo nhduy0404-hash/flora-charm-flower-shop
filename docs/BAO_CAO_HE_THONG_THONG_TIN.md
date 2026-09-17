@@ -168,27 +168,125 @@ erDiagram
 
 ## 4. SƠ ĐỒ PHÂN RÃ CHỨC NĂNG (BFD - BUSINESS FUNCTION DECOMPOSITION)
 
+### 4.1. Sơ Đồ Cây Tổng Thể (High-Level BFD)
+*Sơ đồ thể hiện cấu trúc 2 phân hệ cốt lõi và 11 nhóm chức năng chính của hệ thống FloraCharm:*
+
 ```mermaid
-graph TD
-    System[Hệ Thống FloraCharm Flower Shop]
+flowchart TD
+    ROOT["🌸 HỆ THỐNG WEBSITE HOA TƯƠI FLORACHARM"]
 
-    %% Phân hệ Khách hàng
-    System --> Storefront[1.0 Phân Hệ Khách Hàng / Storefront]
-    Storefront --> SF1[1.1 Khám phá Sản phẩm: Trang chủ, Danh mục, Lọc giá, Tìm kiếm AJAX]
-    Storefront --> SF2[1.2 Giỏ hàng: Thêm, sửa số lượng, xóa, tính tạm tính tự động]
-    Storefront --> SF3[1.3 Đặt hàng & Thanh toán: Chọn ngày/giờ giao, thiệp chúc mừng, áp mã Voucher, VietQR]
-    Storefront --> SF4[1.4 Tra cứu & Lịch sử: Tra cứu mã vận đơn 4 bước, Lịch sử mua hàng cá nhân]
-    Storefront --> SF5[1.5 Tài khoản: Đăng ký, Đăng nhập, Quản lý phiên Session]
+    %% Cấp 1
+    ROOT --> STOREFRONT["🛒 1.0 PHÂN HỆ KHÁCH HÀNG (STOREFRONT)"]
+    ROOT --> ADMIN["⚙️ 2.0 PHÂN HỆ QUẢN TRỊ (ENTERPRISE MIS)"]
 
-    %% Phân hệ Quản trị
-    System --> AdminMIS[2.0 Phân Hệ Quản Trị / Enterprise MIS]
-    AdminMIS --> AD1[2.1 Dashboard & BI: Báo cáo doanh thu thực, đơn hàng cần duyệt, cảnh báo tồn kho]
-    AdminMIS --> AD2[2.2 Quản Lý Mẫu Hoa: CRUD, Bộ lọc, Phân loại, Thùng rác Soft Delete, Khôi phục]
-    AdminMIS --> AD3[2.3 Quản Lý Danh Mục: Phân loại hoa, kiểm tra ràng buộc toàn vẹn khi xóa]
-    AdminMIS --> AD4[2.4 Quản Lý Đơn Hàng: Duyệt tiến độ, xác nhận VietQR 1 chạm, tự hoàn kho khi hủy]
-    AdminMIS --> AD5[2.5 Quản Lý Marketing: Tạo mã giảm giá %, tiền mặt, giới hạn lượt dùng, vô hiệu hóa an toàn]
-    AdminMIS --> AD6[2.6 CRM Khách Hàng: Quản lý tệp khách hàng, theo dõi đơn đặt và tổng chi tiêu LTV]
+    %% Cấp 2 - Storefront
+    STOREFRONT --> SF1["1.1 Khám Phá & Tìm Kiếm"]
+    STOREFRONT --> SF2["1.2 Giỏ Hàng Mua Sắm"]
+    STOREFRONT --> SF3["1.3 Đặt Hàng & Thanh Toán"]
+    STOREFRONT --> SF4["1.4 Tra Cứu & Vận Đơn"]
+    STOREFRONT --> SF5["1.5 Quản Lý Tài Khoản"]
+
+    %% Cấp 2 - Admin
+    ADMIN --> AD1["2.1 Dashboard & Báo Cáo BI"]
+    ADMIN --> AD2["2.2 Quản Lý Mẫu Hoa (Hybrid)"]
+    ADMIN --> AD3["2.3 Quản Lý Danh Mục"]
+    ADMIN --> AD4["2.4 Vận Hành Đơn Hàng"]
+    ADMIN --> AD5["2.5 Marketing & Voucher"]
+    ADMIN --> AD6["2.6 Quản Trị Khách Hàng CRM"]
 ```
+
+---
+
+### 4.2. Sơ Đồ Chi Tiết Phân Hệ Khách Hàng (Storefront BFD)
+
+```mermaid
+flowchart LR
+    SF["🛒 1.0 PHÂN HỆ KHÁCH HÀNG"]
+
+    SF --> F1["1.1 Khám Phá & Tìm Kiếm"]
+    F1 --> F11["Xem Trang chủ & Banner chủ đề"]
+    F1 --> F12["Lọc hoa theo dịp / Danh mục"]
+    F1 --> F13["Lọc theo 3 khoảng giá"]
+    F1 --> F14["Tìm kiếm gợi ý tức thì (AJAX)"]
+
+    SF --> F2["1.2 Giỏ Hàng Mua Sắm"]
+    F2 --> F21["Thêm hoa nhanh không reload trang"]
+    F2 --> F22["Tăng / giảm số lượng linh hoạt"]
+    F2 --> F23["Tự động cập nhật tổng tạm tính"]
+
+    SF --> F3["1.3 Đặt Hàng & Thanh Toán"]
+    F3 --> F31["Chọn ngày & khung giờ giao hoa"]
+    F3 --> F32["Soạn lời chúc in thiệp miễn phí"]
+    F3 --> F33["Áp dụng mã giảm giá (Voucher)"]
+    F3 --> F34["Quét mã VietQR tự động (MB Bank)"]
+    F3 --> F35["Thanh toán khi nhận hàng (COD)"]
+
+    SF --> F4["1.4 Tra Cứu & Vận Đơn"]
+    F4 --> F41["Timeline 4 bước tiến độ đơn hàng"]
+    F4 --> F42["Lịch sử đơn hàng cá nhân (/my-orders)"]
+
+    SF --> F5["1.5 Quản Lý Tài Khoản"]
+    F5 --> F51["Đăng ký & Đăng nhập thành viên"]
+    F5 --> F52["Bảo vệ phiên mua hàng (Session)"]
+```
+
+---
+
+### 4.3. Sơ Đồ Chi Tiết Phân Hệ Quản Trị (Admin MIS BFD)
+
+```mermaid
+flowchart LR
+    AD["⚙️ 2.0 PHÂN HỆ QUẢN TRỊ (ADMIN MIS)"]
+
+    AD --> A1["2.1 Dashboard & Báo Cáo BI"]
+    A1 --> A11["Thống kê doanh thu thực nhận (Paid)"]
+    A1 --> A12["Theo dõi doanh thu chờ thu (COD)"]
+    A1 --> A13["Giám sát đơn hàng mới & kho tồn"]
+
+    AD --> A2["2.2 Quản Lý Mẫu Hoa (Hybrid)"]
+    A2 --> A21["Thêm hoa: Upload máy / Dán URL ngoài"]
+    A2 --> A22["Xem trước ảnh trực tiếp (Live Preview)"]
+    A2 --> A23["Xóa mềm (Thùng rác Soft Deletes)"]
+    A2 --> A24["Khôi phục (Restore) mẫu hoa"]
+    A2 --> A25["Chặn xóa vĩnh viễn nếu đã phát sinh đơn"]
+
+    AD --> A3["2.3 Quản Lý Danh Mục"]
+    A3 --> A31["Thêm, sửa danh mục hoa"]
+    A3 --> A32["Chặn xóa danh mục nếu đang có hoa"]
+
+    AD --> A4["2.4 Vận Hành Đơn Hàng"]
+    A4 --> A41["Duyệt tiến độ đơn hàng 4 bước"]
+    A4 --> A42["Xác nhận chuyển khoản VietQR 1 chạm"]
+    A4 --> A43["Tự hoàn trả tồn kho khi hủy đơn"]
+    A4 --> A44["In phiếu giao hoa (Delivery Slip)"]
+
+    AD --> A5["2.5 Marketing & Voucher"]
+    A5 --> A51["Tạo mã giảm theo % hoặc số tiền"]
+    A5 --> A52["Giới hạn lượt dùng & ngày hết hạn"]
+    A5 --> A53["Tự chuyển Vô hiệu hóa bảo vệ hóa đơn"]
+
+    AD --> A6["2.6 Khách Hàng (CRM)"]
+    A6 --> A61["Quản lý danh sách khách hàng"]
+    A6 --> A62["Tính tổng chi tiêu trọn đời (LTV)"]
+```
+
+---
+
+### 4.4. Bảng Ma Trận Cây Chức Năng Hệ Thống (Hierarchical Functional Matrix)
+
+| Mã CN | Tên Chức Năng Cấp 2 | Nhóm Chức Năng Con (Cấp 3) | Tác Nhân Thực Hiện | Mục Đích Nghiệp Vụ |
+| :--- | :--- | :--- | :--- | :--- |
+| **F1.1** | Khám phá & Catalog | Trang chủ, Danh mục, Lọc giá, Tìm kiếm AJAX | Khách hàng | Giúp khách tìm kiếm mẫu hoa ưng ý nhanh nhất |
+| **F1.2** | Giỏ hàng mua sắm | Thêm AJAX, đổi số lượng, xóa hoa, tính tiền | Khách hàng | Lưu giữ các sản phẩm chọn mua trong phiên làm việc |
+| **F1.3** | Đặt hàng & Thanh toán | Chọn giờ giao, in thiệp, áp voucher, VietQR, COD | Khách hàng | Hoàn tất giao dịch mua hoa với đặc thù quà tặng |
+| **F1.4** | Tra cứu & Vận đơn | Timeline 4 bước vận đơn, lịch sử mua hàng | Khách hàng | Theo dõi đơn hàng minh bạch, gia tăng trải nghiệm |
+| **F1.5** | Xác thực người dùng | Đăng ký, đăng nhập, bảo vệ session | Khách hàng | Quản lý định danh tài khoản khách hàng |
+| **F2.1** | Dashboard & BI | Báo cáo doanh thu thực, đơn mới, cảnh báo kho | Quản trị viên | Cung cấp cái nhìn toàn cảnh về tình hình kinh doanh |
+| **F2.2** | Quản lý hoa (Hybrid) | Thêm, sửa, tải ảnh từ máy, xóa mềm, khôi phục | Quản trị viên | Quản trị catalog, bảo toàn lịch sử bán hàng |
+| **F2.3** | Quản lý danh mục | Thêm, sửa, ràng buộc toàn vẹn cha-con | Quản trị viên | Phân loại hoa theo dịp và bảo vệ liên kết CSDL |
+| **F2.4** | Vận hành đơn hàng | Cập nhật tiến độ, xác nhận VietQR 1 chạm, hoàn kho | Quản trị viên | Xử lý cắm hoa, giao hoa và điều phối tài chính |
+| **F2.5** | Marketing & Voucher | Tạo voucher %, tiền mặt, vô hiệu hóa an toàn | Quản trị viên | Kích cầu mua sắm và quản lý ngân sách khuyến mãi |
+| **F2.6** | Quản trị CRM | Danh sách khách, thống kê tổng chi tiêu LTV | Quản trị viên | Chăm sóc khách hàng trung thành, phân nhóm khách |
 
 ---
 
