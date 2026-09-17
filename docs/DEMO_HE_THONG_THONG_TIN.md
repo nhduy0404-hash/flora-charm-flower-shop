@@ -1,4 +1,4 @@
-# Báo Cáo Phân Tích Hệ Thống Thông Tin & Toàn Vẹn Dữ Liệu
+# Demo Phân Tích Hệ Thống Thông Tin & Toàn Vẹn Dữ Liệu
 ## Dự Án: Hệ Thống Thương Mại Điện Tử & Quản Trị Cửa Hàng Hoa Tươi (FloraCharm MIS)
 - **Vị trí dự án:** `D:\01_HocTap_CNTT\01_Website_Cua_hang_ban_hoa`
 - **Công nghệ nền tảng:** Laravel 10/12 (PHP 8.2), MySQL 8.0, Blade, Bootstrap 5.3, VietQR Banking API
