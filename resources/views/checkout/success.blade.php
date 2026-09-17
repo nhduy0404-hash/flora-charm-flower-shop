@@ -23,8 +23,8 @@
                         <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-building-columns me-2"></i> Thông Tin Chuyển Khoản Ngân Hàng</h6>
                         <ul class="list-unstyled small mb-0">
                             <li class="mb-2">Ngân hàng: <strong>MB Bank (Ngân hàng Quân Đội)</strong></li>
-                            <li class="mb-2">Số tài khoản: <strong class="text-danger fs-6">0988888888</strong></li>
-                            <li class="mb-2">Tên tài khoản: <strong>SHOP HOA TUOI FLORACHARM</strong></li>
+                            <li class="mb-2">Số tài khoản: <strong class="text-danger fs-5">0369710409</strong></li>
+                            <li class="mb-2">Tên chủ tài khoản: <strong>{{ $bankAccountName ?? 'FLORA CHARM' }}</strong></li>
                             <li class="mb-2">Số tiền: <strong class="text-danger fs-5">{{ number_format($order->total_amount) }} đ</strong></li>
                             <li class="mb-0">Nội dung chuyển khoản: <strong class="badge bg-secondary p-2 fs-6">{{ $order->order_number }}</strong></li>
                         </ul>
@@ -44,6 +44,11 @@
                 <div class="col-sm-6">Người nhận: <strong>{{ $order->receiver_name }}</strong> ({{ $order->receiver_phone }})</div>
                 <div class="col-sm-6">Thời gian giao: <strong>{{ $order->delivery_date->format('d/m/Y') }}</strong> ({{ $order->delivery_time_slot }})</div>
                 <div class="col-12">Địa chỉ giao: <strong>{{ $order->shipping_address }}</strong></div>
+                @if($order->discount_amount > 0)
+                    <div class="col-sm-6 text-muted">Tạm tính tiền hoa: {{ number_format($order->subtotal) }} đ</div>
+                    <div class="col-sm-6 text-success fw-bold">Giảm giá voucher: -{{ number_format($order->discount_amount) }} đ</div>
+                @endif
+                <div class="col-12 fw-bold text-danger fs-6 pt-1">Tổng cộng thanh toán: {{ number_format($order->total_amount) }} đ</div>
                 @if($order->card_message)
                     <div class="col-12 mt-2 pt-2 border-top">
                         <span class="text-muted">Lời chúc in thiệp:</span>

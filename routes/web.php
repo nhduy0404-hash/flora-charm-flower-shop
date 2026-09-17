@@ -35,6 +35,7 @@ Route::prefix('cart')->name('cart.')->group(function () {
 Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('index');
     Route::post('/', [CheckoutController::class, 'store'])->name('store');
+    Route::post('/check-coupon', [CheckoutController::class, 'checkCoupon'])->name('checkCoupon');
     Route::get('/success/{orderNumber}', [CheckoutController::class, 'success'])->name('success');
 });
 

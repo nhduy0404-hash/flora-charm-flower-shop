@@ -70,7 +70,8 @@ class CheckoutController extends Controller
         $discountAmount = 0;
         $couponId = null;
         if ($request->filled('coupon_code')) {
-            $coupon = Coupon::where('code', $request->coupon_code)->first();
+            $couponCode = strtoupper(trim($request->coupon_code));
+            $coupon = Coupon::where('code', $couponCode)->first();
             if ($coupon && $coupon->isValidForAmount($subtotal)) {
                 $discountAmount = $coupon->calculateDiscount($subtotal);
                 $couponId = $coupon->id;
@@ -125,23 +126,75 @@ class CheckoutController extends Controller
     }
 
     /**
+     * AJAX Kiểm tra mã giảm giá và tính toán số tiền giảm tức thì
+     */
+    public function checkCoupon(Request $request)
+    {
+        $cart = session()->get('cart', []);
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+
+        $code = strtoupper(trim($request->input('code', '')));
+        if (empty($code)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng nhập mã voucher!'
+            ], 422);
+        }
+
+        $coupon = Coupon::where('code', $code)->first();
+        if (!$coupon) {
+            return response()->json([
+                'success' => false,
+                'message' => "Mã giảm giá '{$code}' không tồn tại trên hệ thống!"
+            ], 404);
+        }
+
+        if (!$coupon->isValidForAmount($subtotal)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã giảm giá này đã hết hạn hoặc chưa đạt giá trị đơn tối thiểu!'
+            ], 422);
+        }
+
+        $discount = $coupon->calculateDiscount($subtotal);
+        $newTotal = max(0, $subtotal - $discount);
+
+        return response()->json([
+            'success' => true,
+            'code' => $coupon->code,
+            'discount_type' => $coupon->discount_type,
+            'discount_percent' => $coupon->discount_type === 'percentage' ? (float)$coupon->discount_value : null,
+            'discount_amount' => $discount,
+            'discount_formatted' => number_format($discount) . ' đ',
+            'new_total' => $newTotal,
+            'new_total_formatted' => number_format($newTotal) . ' đ',
+            'message' => "Áp dụng thành công voucher {$coupon->code} (-" . ($coupon->discount_type === 'percentage' ? (int)$coupon->discount_value . '%' : number_format($discount) . ' đ') . ")!"
+        ]);
+    }
+
+    /**
      * Trang thông báo đặt hàng thành công (kèm mã VietQR nếu chọn chuyển khoản)
      */
     public function success($orderNumber)
     {
         $order = Order::with('orderItems')->where('order_number', $orderNumber)->firstOrFail();
 
-        // Tự động tạo mã VietQR nếu chọn thanh toán Chuyển khoản ngân hàng
+        // Tự động tạo mã VietQR nếu chọn thanh toán Chuyển khoản ngân hàng (MB Bank: 0369710409)
         $vietQrUrl = null;
+        $bankAccountNo = env('VIETQR_ACCOUNT_NO', '0369710409');
+        $bankId = env('VIETQR_BANK_ID', 'MB');
+        $bankAccountName = env('VIETQR_ACCOUNT_NAME', 'FLORA CHARM');
+
         if ($order->payment_method === 'bank_transfer') {
-            $bankId = 'MB'; // Ngân hàng Quân Đội MB Bank
-            $accountNo = '0988888888';
-            $accountName = urlencode('SHOP HOA TUOI');
+            $accountNameEncoded = urlencode($bankAccountName);
             $amount = (int) $order->total_amount;
             $addInfo = urlencode($order->order_number);
-            $vietQrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-compact2.png?amount={$amount}&addInfo={$addInfo}&accountName={$accountName}";
+            $vietQrUrl = "https://img.vietqr.io/image/{$bankId}-{$bankAccountNo}-compact2.png?amount={$amount}&addInfo={$addInfo}&accountName={$accountNameEncoded}";
         }
 
-        return view('checkout.success', compact('order', 'vietQrUrl'));
+        return view('checkout.success', compact('order', 'vietQrUrl', 'bankAccountNo', 'bankId', 'bankAccountName'));
     }
 }

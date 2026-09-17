@@ -49,9 +49,14 @@ Route::get('/orders/track', function (Request $request) {
 
 // 5. API Sinh mã VietQR chuyển khoản
 Route::get('/orders/{orderNumber}/vietqr', function ($orderNumber) {
+    $bankId = env('VIETQR_BANK_ID', 'MB');
+    $accountNo = env('VIETQR_ACCOUNT_NO', '0369710409');
+    $accountName = urlencode(env('VIETQR_ACCOUNT_NAME', 'FLORA CHARM'));
     return response()->json([
         'success' => true,
         'order_number' => $orderNumber,
-        'qr_url' => "https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=500000&addInfo={$orderNumber}&accountName=FLOWER%20SHOP"
+        'bank_id' => $bankId,
+        'account_no' => $accountNo,
+        'qr_url' => "https://img.vietqr.io/image/{$bankId}-{$accountNo}-compact2.png?amount=500000&addInfo={$orderNumber}&accountName={$accountName}"
     ]);
 });

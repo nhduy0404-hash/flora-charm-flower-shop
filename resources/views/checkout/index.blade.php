@@ -129,16 +129,30 @@
 
                     <!-- Mã giảm giá -->
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Mã giảm giá (Nếu có)</label>
+                        <label class="form-label small fw-semibold">Mã giảm giá (Voucher)</label>
                         <div class="input-group">
-                            <input type="text" name="coupon_code" class="form-control rounded-start-pill text-uppercase" placeholder="Mã voucher...">
-                            <button type="button" class="btn btn-outline-secondary rounded-end-pill">Áp dụng</button>
+                            <input type="text" name="coupon_code" id="coupon_input" class="form-control rounded-start-pill text-uppercase" placeholder="Nhập mã voucher...">
+                            <button type="button" id="btn_apply_coupon" class="btn btn-outline-danger rounded-end-pill px-3">
+                                Áp dụng
+                            </button>
                         </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">Gợi ý voucher:</small>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1 px-2" style="cursor: pointer;" onclick="document.getElementById('coupon_input').value='GIAM99'; document.getElementById('btn_apply_coupon').click();">
+                                <i class="fa-solid fa-tag me-1"></i>GIAM99 (Giảm 99%)
+                            </span>
+                        </div>
+                        <div id="coupon_status_msg" class="small mt-1 d-none"></div>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2 text-muted small">
                         <span>Tạm tính tiền hoa:</span>
-                        <span class="fw-bold text-dark">{{ number_format($subtotal) }} đ</span>
+                        <span class="fw-bold text-dark" id="subtotal_text">{{ number_format($subtotal) }} đ</span>
+                    </div>
+
+                    <div id="discount_row" class="d-none d-flex justify-content-between mb-2 small text-success">
+                        <span><i class="fa-solid fa-gift me-1"></i> Giảm giá voucher (<span id="discount_desc">99%</span>):</span>
+                        <span class="fw-bold" id="discount_amount_text">-0 đ</span>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2 text-muted small">
@@ -155,7 +169,7 @@
 
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fw-bold fs-5">Tổng thanh toán:</span>
-                        <span class="fw-bold text-danger fs-4">{{ number_format($subtotal) }} đ</span>
+                        <span class="fw-bold text-danger fs-4" id="total_amount_text">{{ number_format($subtotal) }} đ</span>
                     </div>
 
                     <div class="d-grid">
@@ -172,4 +186,94 @@
         </div>
     </form>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const couponInput = document.getElementById('coupon_input');
+        const btnApply = document.getElementById('btn_apply_coupon');
+        const discountRow = document.getElementById('discount_row');
+        const discountDesc = document.getElementById('discount_desc');
+        const discountAmountText = document.getElementById('discount_amount_text');
+        const totalAmountText = document.getElementById('total_amount_text');
+        const couponStatusMsg = document.getElementById('coupon_status_msg');
+
+        btnApply.addEventListener('click', function() {
+            const code = couponInput.value.trim().toUpperCase();
+            if (!code) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Chú ý',
+                    text: 'Vui lòng nhập mã voucher trước khi áp dụng!'
+                });
+                return;
+            }
+
+            btnApply.disabled = true;
+            btnApply.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+            fetch('{{ route('checkout.checkCoupon') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(({ status, body }) => {
+                btnApply.disabled = false;
+                btnApply.textContent = 'Áp dụng';
+
+                if (status === 200 && body.success) {
+                    discountRow.classList.remove('d-none');
+                    discountDesc.textContent = body.discount_percent ? body.discount_percent + '%' : 'Trực tiếp';
+                    discountAmountText.textContent = '-' + body.discount_formatted;
+                    totalAmountText.textContent = body.new_total_formatted;
+
+                    couponStatusMsg.className = 'small mt-1 text-success fw-semibold';
+                    couponStatusMsg.textContent = body.message;
+                    couponStatusMsg.classList.remove('d-none');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã kích hoạt Voucher!',
+                        text: body.message,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    discountRow.classList.add('d-none');
+                    couponStatusMsg.className = 'small mt-1 text-danger fw-semibold';
+                    couponStatusMsg.textContent = body.message || 'Mã giảm giá không hợp lệ!';
+                    couponStatusMsg.classList.remove('d-none');
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Mã không khả dụng',
+                        text: body.message || 'Mã giảm giá không hợp lệ!'
+                    });
+                }
+            })
+            .catch(err => {
+                btnApply.disabled = false;
+                btnApply.textContent = 'Áp dụng';
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể kiểm tra mã giảm giá, vui lòng thử lại!'
+                });
+            });
+        });
+
+        couponInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnApply.click();
+            }
+        });
+    });
+</script>
 @endsection
