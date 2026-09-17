@@ -67,6 +67,7 @@ Sau khi chạy lệnh `php artisan db:seed`, hệ thống đã có sẵn 2 tài 
 
 ## 📂 4. TÀI LIỆU QUẢN TRỊ & QUY CHẾ NHÓM
 Nhóm lưu trữ đầy đủ tài liệu phục vụ báo cáo và vận hành tại:
+* 📊 **[Báo Cáo Phân Tích Hệ Thống Thông Tin & Sơ Đồ ERD, DFD (docs/BAO_CAO_HE_THONG_THONG_TIN.md)](docs/BAO_CAO_HE_THONG_THONG_TIN.md)**: Chứa toàn bộ phân tích nghiệp vụ, ERD, DFD mức 0 & 1, BFD, kiến trúc Soft Deletes và Hybrid Image.
 * 📜 **[Quy chế làm việc & Git Flow (CONTRIBUTING.md)](CONTRIBUTING.md)**: 6 luật bất di bất dịch, quy chuẩn đặt tên nhánh & commit.
 * 📝 **[Nhật ký hoạt động (docs/WORK_LOG.md)](docs/WORK_LOG.md)**: Ghi chép tiến độ 4 tuần gắn liền với mã PR/Commit.
 * 🔌 **[Đặc tả API nội bộ (docs/API_SPECIFICATION.md)](docs/API_SPECIFICATION.md)**: 5 RESTful API phục vụ tính năng mở rộng điểm 10.
