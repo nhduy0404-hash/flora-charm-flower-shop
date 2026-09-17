@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
@@ -47,7 +48,7 @@ class AdminProductController extends Controller
     }
 
     /**
-     * Lưu hoa mới vào CSDL
+     * Lưu hoa mới vào CSDL (Hỗ trợ Hybrid Upload: Tải file từ máy HOẶC Dán link URL)
      */
     public function store(Request $request)
     {
@@ -57,7 +58,8 @@ class AdminProductController extends Controller
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|lt:price',
             'stock_quantity' => 'required|integer|min:0',
-            'thumbnail' => 'nullable|url',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'thumbnail' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
@@ -69,6 +71,14 @@ class AdminProductController extends Controller
             $slug .= '-' . ($count + 1);
         }
 
+        // Xử lý cơ chế ảnh Hybrid (Ưu tiên File upload, nếu không thì lấy link URL)
+        $thumbnailPath = 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&q=80';
+        if ($request->hasFile('image_file')) {
+            $thumbnailPath = $request->file('image_file')->store('products', 'public');
+        } elseif ($request->filled('thumbnail')) {
+            $thumbnailPath = trim($request->thumbnail);
+        }
+
         Product::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
@@ -76,7 +86,7 @@ class AdminProductController extends Controller
             'price' => $request->price,
             'sale_price' => $request->sale_price,
             'stock_quantity' => $request->stock_quantity,
-            'thumbnail' => $request->thumbnail ?: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&q=80',
+            'thumbnail' => $thumbnailPath,
             'description' => $request->description,
             'is_featured' => $request->has('is_featured'),
             'is_active' => $request->has('is_active'),
@@ -96,7 +106,7 @@ class AdminProductController extends Controller
     }
 
     /**
-     * Cập nhật thông tin hoa vào CSDL
+     * Cập nhật thông tin hoa vào CSDL (Hỗ trợ Hybrid Image update)
      */
     public function update(Request $request, $id)
     {
@@ -108,7 +118,8 @@ class AdminProductController extends Controller
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|lt:price',
             'stock_quantity' => 'required|integer|min:0',
-            'thumbnail' => 'nullable|url',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'thumbnail' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
@@ -124,6 +135,22 @@ class AdminProductController extends Controller
             $product->slug = $slug;
         }
 
+        // Xử lý cập nhật ảnh Hybrid
+        $thumbnailPath = $product->thumbnail;
+        if ($request->hasFile('image_file')) {
+            // Xóa file ảnh cũ nếu trước đó là file cục bộ trong storage
+            if ($product->thumbnail && !str_starts_with($product->thumbnail, 'http://') && !str_starts_with($product->thumbnail, 'https://')) {
+                Storage::disk('public')->delete($product->thumbnail);
+            }
+            $thumbnailPath = $request->file('image_file')->store('products', 'public');
+        } elseif ($request->filled('thumbnail') && $request->thumbnail !== $product->thumbnail) {
+            // Nếu người dùng đổi sang link URL mới, xóa file cũ nếu trước đó là file cục bộ
+            if ($product->thumbnail && !str_starts_with($product->thumbnail, 'http://') && !str_starts_with($product->thumbnail, 'https://')) {
+                Storage::disk('public')->delete($product->thumbnail);
+            }
+            $thumbnailPath = trim($request->thumbnail);
+        }
+
         $product->update([
             'category_id' => $request->category_id,
             'name' => $request->name,
@@ -131,7 +158,7 @@ class AdminProductController extends Controller
             'price' => $request->price,
             'sale_price' => $request->sale_price,
             'stock_quantity' => $request->stock_quantity,
-            'thumbnail' => $request->thumbnail ?: $product->thumbnail,
+            'thumbnail' => $thumbnailPath,
             'description' => $request->description,
             'is_featured' => $request->has('is_featured'),
             'is_active' => $request->has('is_active'),

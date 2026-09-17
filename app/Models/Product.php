@@ -62,9 +62,17 @@ class Product extends Model
         return (float) ($this->reviews()->avg('rating') ?? 5.0);
     }
 
-    // Ảnh đại diện sản phẩm với ảnh fallback chuẩn
+    // Ảnh đại diện sản phẩm với fallback và tự động nhận diện URL hoặc Local Storage
     public function getPrimaryImageAttribute(): string
     {
-        return $this->thumbnail ?: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&q=80';
+        if (!$this->thumbnail) {
+            return 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=800&q=80';
+        }
+
+        if (str_starts_with($this->thumbnail, 'http://') || str_starts_with($this->thumbnail, 'https://')) {
+            return $this->thumbnail;
+        }
+
+        return asset('storage/' . $this->thumbnail);
     }
 }

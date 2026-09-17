@@ -18,3 +18,5 @@ yarn-error.log
 Thumbs.db
 .idea
 .vscode
+/public/storage
+
