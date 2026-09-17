@@ -113,7 +113,7 @@
                     <div class="mb-3">
                         @foreach($cart as $item)
                             <div class="d-flex align-items-center mb-3">
-                                <img src="{{ $item['thumbnail'] }}" alt="{{ $item['name'] }}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <img src="{{ str_starts_with($item['thumbnail'], 'http') ? $item['thumbnail'] : asset('storage/' . $item['thumbnail']) }}" alt="{{ $item['name'] }}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
                                 <div class="flex-grow-1 small">
                                     <div class="fw-bold text-truncate" style="max-width: 170px;">{{ $item['name'] }}</div>
                                     <div class="text-muted">{{ $item['quantity'] }} x {{ number_format($item['price']) }} đ</div>

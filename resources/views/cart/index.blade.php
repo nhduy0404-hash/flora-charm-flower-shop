@@ -30,7 +30,7 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $item['thumbnail'] }}" alt="{{ $item['name'] }}" class="rounded-3 me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                                                <img src="{{ str_starts_with($item['thumbnail'], 'http') ? $item['thumbnail'] : asset('storage/' . $item['thumbnail']) }}" alt="{{ $item['name'] }}" class="rounded-3 me-3" style="width: 70px; height: 70px; object-fit: cover;">
                                                 <div>
                                                     <h6 class="mb-0 fw-bold">
                                                         <a href="{{ route('flowers.show', $item['slug']) }}" class="text-decoration-none text-dark">

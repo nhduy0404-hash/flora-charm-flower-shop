@@ -18,7 +18,7 @@
         <!-- Ảnh Lớn Sản Phẩm -->
         <div class="col-lg-6">
             <div class="bg-white p-3 rounded-5 shadow-sm border text-center">
-                <img src="{{ $product->thumbnail }}" alt="{{ $product->name }}" class="img-fluid rounded-4" style="max-height: 520px; width: 100%; object-fit: cover;">
+                <img src="{{ $product->primary_image }}" alt="{{ $product->name }}" class="img-fluid rounded-4" style="max-height: 520px; width: 100%; object-fit: cover;">
             </div>
         </div>
 
@@ -89,7 +89,7 @@
                     <div class="col-6 col-md-3">
                         <div class="flower-card h-100 d-flex flex-column">
                             <a href="{{ route('flowers.show', $related->slug) }}">
-                                <img src="{{ $related->thumbnail }}" alt="{{ $related->name }}">
+                                <img src="{{ $related->primary_image }}" alt="{{ $related->name }}">
                             </a>
                             <div class="p-3 d-flex flex-column flex-grow-1">
                                 <h6 class="fw-bold mb-2">

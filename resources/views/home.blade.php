@@ -130,7 +130,7 @@
                         <div class="flower-card h-100 d-flex flex-column">
                             <div class="position-relative">
                                 <a href="{{ route('flowers.show', $flower->slug) }}">
-                                    <img src="{{ $flower->thumbnail }}" alt="{{ $flower->name }}">
+                                    <img src="{{ $flower->primary_image }}" alt="{{ $flower->name }}">
                                 </a>
                                 @if($flower->sale_price && $flower->sale_price < $flower->price)
                                     <span class="position-absolute top-0 start-0 bg-danger text-white rounded-end px-2 py-1 small fw-bold mt-2">
