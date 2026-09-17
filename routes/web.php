@@ -39,8 +39,9 @@ Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::get('/success/{orderNumber}', [CheckoutController::class, 'success'])->name('success');
 });
 
-// 4. Tra Cứu Tiến Độ Đơn Hàng
+// 4. Tra Cứu Tiến Độ & Lịch Sử Đơn Hàng
 Route::get('/track-order', [OrderTrackingController::class, 'index'])->name('orders.track');
+Route::get('/my-orders', [OrderTrackingController::class, 'history'])->name('orders.history')->middleware('auth');
 
 // 5. Xác Thực (Authentication)
 Route::middleware('guest')->group(function () {

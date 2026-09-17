@@ -111,6 +111,9 @@
                         <i class="fa-solid fa-magnifying-glass me-1"></i> Tra cứu đơn hàng
                     </a>
                     @auth
+                        <a href="{{ route('orders.history') }}" class="text-decoration-none text-danger me-3 fw-semibold">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Đơn hàng của tôi
+                        </a>
                         <span>Xin chào, <strong>{{ Auth::user()->name }}</strong></span>
                         @if(Auth::user()->isAdmin())
                             <a href="{{ route('admin.dashboard') }}" class="badge bg-danger text-decoration-none ms-2">Admin</a>
